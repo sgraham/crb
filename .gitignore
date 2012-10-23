@@ -1,3 +1,5 @@
-build/
+debug_obj/
+release_obj/
+*.lib
 crb/
 pristine/
