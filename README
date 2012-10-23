@@ -1,0 +1,19 @@
+crb
+---
+
+(for "ChRomium Base")
+
+A script to pull Chromium's base library and set it up to build outside of
+Chromium.
+
+Pulls a specific revision, munges the source a bit, and builds a debug and
+release library.
+
+Builds crb_debug.lib and crb_release.lib. One of those should be linked
+against, and the parent of the created crb/ directory added to the include
+path.
+
+At some point, a --target= command line option should be added to package just
+the headers, libs, and license files to a particular clean target directory.
+
+Currently, only works on Windows. Pull requests welcome.
