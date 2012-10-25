@@ -9,7 +9,8 @@ import sys
 _g_repo = 'pristine'
 _g_processed = 'crb'
 # TODO: Command line flag to set to 'master' for updating or saucyness.
-_g_lkg = 'c5a2c1cd93b1cb9f38d84d1c6343e3be90aceee1'
+#_g_lkg = 'c5a2c1cd93b1cb9f38d84d1c6343e3be90aceee1'
+_g_lkg = 'master'
 
 
 def Run(command, message=None):
@@ -104,7 +105,7 @@ def FilterFileList(all_files, for_types):
               'unix_', 'file_descriptor', '_aurax11', 'sha1_win.cc', '_openbsd',
               'xdg_mime', '_kqueue', 'symbolize', 'string16.cc', '_chromeos',
               'nix\\', 'xdg_', 'file_path_watcher_stub.cc', 'dtoa.cc',
-              'event_recorder_stubs.cc',
+              'event_recorder_stubs.cc', '_mock.cc',
               'allocator\\', # Kind of overly involved for user-configuration.
               'i18n\\', # Requires icu (I think)
               ):
