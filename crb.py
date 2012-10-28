@@ -52,34 +52,35 @@ def PullSource():
   shutil.copy('misc/gtest_prod.h', _g_processed)
 
 
-def SubBaseToCrbInInclude(file):
+def DoToFile(file, transforms):
   lines = open(file, 'rU').read().splitlines(True)
-  lines = [re.sub('^#include "base/', '#include "crb/', x) for x in lines]
+  for transform in transforms:
+    lines = [transform(x) for x in lines]
   open(file, 'wb').write(''.join(lines))
 
 
-def RemoveBuildFromBuildConfig(file):
-  lines = open(file, 'rU').read().splitlines(True)
-  lines = [re.sub('^#include "build/build_config.h"',
-                  '#include "crb/build_config.h"', x) for x in lines]
-  open(file, 'wb').write(''.join(lines))
+def SubBaseToCrbInInclude(line):
+  return re.sub('^#include "base/', '#include "crb/', line)
 
 
-def FixPathToGtestProd(file):
-  lines = open(file, 'rU').read().splitlines(True)
-  lines = [re.sub('^#include "testing/gtest/include/gtest/gtest_prod.h"$',
-                  '#include "crb/gtest_prod.h"', x) for x in lines]
-  open(file, 'wb').write(''.join(lines))
+def RemoveBuildFromBuildConfig(line):
+  return re.sub('^#include "build/build_config.h"',
+                '#include "crb/build_config.h"', line)
+
+
+def FixPathToGtestProd(line):
+  return re.sub('^#include "testing/gtest/include/gtest/gtest_prod.h"$',
+                '#include "crb/gtest_prod.h"', line)
 
 
 def TextualReplacements(all_files):
   print 'Munging...'
+  file_transforms = [ SubBaseToCrbInInclude, RemoveBuildFromBuildConfig,
+                      FixPathToGtestProd ]
   for name in all_files:
     file = os.path.join(_g_processed, name)
-    if file.endswith('.cc') or file.endswith('.c') or file.endswith('h'):
-      SubBaseToCrbInInclude(file)
-      RemoveBuildFromBuildConfig(file)
-      FixPathToGtestProd(file)
+    if file.endswith('.cc') or file.endswith('.c') or file.endswith('.h'):
+      DoToFile(file, file_transforms)
 
 
 def GetFileList():
@@ -142,7 +143,8 @@ def BuildLibs(file_list):
         '/DWIN32_LEAN_AND_MEAN /DWIN32 /D_WIN32 /D_CRT_RAND_S '
         '/I.. /wd4530 /wd4310 /wd4127 /wd4100 /wd4481 /wd4244 /wd4245 /wd4996 '
         '/wd4702 /wd4018 /wd4706 /wd4355 /wd4512 /wd4800 /wd4701 '
-        '/MP /c /nologo %s' % (
+        '/MP /Zi /c /Fd%s /nologo %s' % (
+          style_to_lib(style) + '.pdb',
           ' '.join((os.path.join('..', _g_processed, x) for x in file_list))))
     Run(shared + ' ' + extra_cl_flags_for_style[style])
     objs = ' '.join(os.path.splitext(os.path.split(x)[1])[0] + '.obj'
@@ -150,8 +152,7 @@ def BuildLibs(file_list):
     Run('lib /nologo /out:..\\%s %s %s' % (
         style_to_lib(style), objs, extra_lib_flags_for_style[style]))
     os.chdir(olddir)
-  print
-  print 'Built %s.' % ', '.join(style_to_lib(s) for s in styles)
+    RemoveTree('%s_obj' % style)
 
 
 def main(args):
@@ -161,7 +162,6 @@ def main(args):
   TextualReplacements(all_files)
   win_lib = FilterFileList(all_files, ('win', 'lib'))
   BuildLibs(win_lib)
-  print 'Headers in crb/, include path should be %s' % os.path.abspath('.')
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main())
